@@ -80,16 +80,17 @@ Storyboard: 0:00 invariant; 0:15 s6 refusal; 0:40 s2 reopen + unsent draft; 1:10
 
 ## Architecture
 
+This is a **tool-calling agent**, not a chatbot. There is no LLM in the loop because ticket IDs, customer IDs, and pass/fail must be exact.
+
 ```
-Linear + GitHub + Gmail snapshots
-              │
-              ▼
-    deterministic ledger builder   exact immutable joins
-              │
-              ▼
- pure classifier + bounded planner ──► Linear status/comment
-              │                       Gmail unsent draft
-              │ verified read-back    Slack digest last
-              ▼
- independent final-state grader
+snapshot four adapters (fixture or live HTTP, same interface)
+        → join on PL-102 / customer_id / email (never a name)
+        → classify with a pure function
+        → bounded writes: Linear status+comment, Gmail DRAFT only, Slack digest
+        → read-back (HTTP 200 is not success)
+        → independent grader on final app state
 ```
+
+Live adapters (`promiseledger/adapters/live.py`) call Linear GraphQL, GitHub REST, Gmail drafts, and Slack `chat.postMessage`. The public demo uses the **same planner** against isolated worlds so anyone can reproduce it without putting an inbox token on a public URL. `send` is not implemented. GitHub is read-only.
+
+Hosted console: https://promiseledger.vercel.app

@@ -3,102 +3,152 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PromiseLedger</title>
+  <title>PromiseLedger — agent control plane</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #111318;
-      --panel: #1a1d24;
-      --ink: #eef0f4;
-      --muted: #9aa3b2;
-      --line: #2a303c;
-      --accent: #6d7cff;
-      --pass: #3ecf8e;
-      --fail: #ff6b6b;
-      --warn: #f0c14b;
+      --bg: #07080c;
+      --panel: rgba(16,18,26,.92);
+      --ink: #f4f1ea;
+      --muted: #9b978c;
+      --line: #232632;
+      --violet: #8b7cff;
+      --mint: #5ef2c0;
+      --amber: #ffc857;
+      --red: #ff6b7a;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 "IBM Plex Sans", sans-serif; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 Manrope, sans-serif; }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #1a1440 0%, transparent 50%),
+        radial-gradient(900px 400px at 100% 0%, #0b2a24 0%, transparent 45%),
+        var(--bg);
+    }
     header {
-      display: flex; justify-content: space-between; align-items: center; gap: 16px;
-      padding: 16px 22px; border-bottom: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+      padding: 28px 32px 18px;
     }
-    header h1 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.02em; }
-    header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+    .brand { font-family: Syne, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -0.05em; margin: 0; }
+    .lede { max-width: 640px; color: var(--muted); margin: 8px 0 0; }
     .run {
-      background: var(--accent); color: #fff; border: 0; height: 40px; padding: 0 18px;
-      border-radius: 8px; font: 600 14px "IBM Plex Sans", sans-serif; cursor: pointer;
+      background: var(--ink); color: #0b0c10; border: 0; height: 48px; padding: 0 22px;
+      border-radius: 999px; font: 700 14px Syne, sans-serif; letter-spacing: .04em;
+      text-transform: uppercase; cursor: pointer;
     }
-    .run:disabled { opacity: 0.5; cursor: wait; }
-    .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 12px 22px; border-bottom: 1px solid var(--line); }
+    .run:disabled { opacity: .45; }
+    .orbs { display: flex; gap: 10px; padding: 0 32px 18px; flex-wrap: wrap; }
+    .orb {
+      display: flex; align-items: center; gap: 8px;
+      border: 1px solid var(--line); background: var(--panel);
+      padding: 8px 12px; border-radius: 999px; font-size: 12px; color: var(--muted);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px var(--mint); }
+    .pipe {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+      padding: 0 32px 22px;
+    }
+    .stage {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px;
+    }
+    .stage b { display: block; font-family: Syne, sans-serif; font-size: 13px; margin-bottom: 4px; }
+    .stage span { color: var(--muted); font-size: 12px; }
+    .why {
+      margin: 0 32px 22px; padding: 18px 20px; border-radius: 16px;
+      border: 1px solid #2a2744; background: linear-gradient(180deg, #12101c, #0d0e14);
+    }
+    .why h2 { font-family: Syne, sans-serif; margin: 0 0 8px; font-size: 18px; }
+    .why p { margin: 0; color: var(--muted); max-width: 980px; }
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 0 32px 14px; }
     .tabs button {
       background: transparent; color: var(--muted); border: 1px solid var(--line);
-      border-radius: 8px; padding: 7px 11px; white-space: nowrap; cursor: pointer; font: 500 12px "IBM Plex Sans", sans-serif;
+      border-radius: 10px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
+      font: 500 12px Manrope, sans-serif;
     }
-    .tabs button.active { color: var(--ink); border-color: var(--accent); background: #22263a; }
-    .hint { padding: 10px 22px 0; color: var(--muted); font-size: 13px; }
-    .grid { display: grid; grid-template-columns: 1fr 320px 1fr; gap: 12px; padding: 16px 22px 24px; }
-    .col { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; min-height: 460px; overflow: hidden; }
+    .tabs button.active { color: var(--ink); border-color: var(--violet); background: #161328; }
+    .kind { margin-left: 6px; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .grid { display: grid; grid-template-columns: 1.05fr .9fr 1.05fr; gap: 12px; padding: 0 32px 18px; }
+    .col { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; min-height: 420px; overflow: hidden; }
     .col h3 {
-      margin: 0; padding: 12px 14px; font-size: 11px; letter-spacing: 0.12em;
+      margin: 0; padding: 12px 14px; font-size: 11px; letter-spacing: .14em;
       text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line);
     }
     .app { padding: 12px 14px; border-bottom: 1px solid var(--line); }
-    .app:last-child { border-bottom: 0; }
-    .app-name { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-    .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .app-name { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .row { display: flex; justify-content: space-between; gap: 8px; }
     .badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: #2b3140; }
-    .badge.Done { background: #163528; color: var(--pass); }
-    .badge.Reopened, .badge.Breached { background: #3a2e12; color: var(--warn); }
-    .badge.DRAFT { background: #262b4a; color: #b4bcff; }
+    .badge.Done { background: #163528; color: var(--mint); }
+    .badge.Reopened, .badge.Breached { background: #3a2e12; color: var(--amber); }
+    .badge.DRAFT { background: #262b4a; color: #c5c0ff; }
     .meta { margin-top: 4px; color: var(--muted); font-size: 12px; }
-    .mail { margin-top: 8px; padding: 10px; border-radius: 8px; background: #12151b; font: 12px/1.4 "IBM Plex Mono", monospace; white-space: pre-wrap; }
+    .mail { margin-top: 8px; padding: 10px; border-radius: 8px; background: #0c0e14; font: 12px/1.4 "JetBrains Mono", monospace; white-space: pre-wrap; }
     .empty { color: var(--muted); padding: 14px; }
-    .log { list-style: none; margin: 0; padding: 8px 0; font: 12px/1.5 "IBM Plex Mono", monospace; }
+    .log { list-style: none; margin: 0; padding: 6px 0; font: 12px/1.5 "JetBrains Mono", monospace; }
     .log li { padding: 8px 14px; border-bottom: 1px solid #232833; color: var(--muted); }
-    .log li.show { color: var(--ink); }
-    .log .refuse, .log .fault { color: var(--fail); }
-    .log .write, .log .grade { color: var(--pass); }
-    .verdict { margin: 0 22px 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-weight: 600; }
-    .verdict.pass { color: var(--pass); }
-    .verdict.fail { color: var(--fail); }
-    .grade { margin: 0 22px 40px; overflow-x: auto; }
+    .log .write, .log .grade { color: var(--mint); }
+    .log .refuse, .log .fault { color: var(--red); }
+    .log .class { color: var(--violet); }
+    .delta, .verdict { margin: 0 32px 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); }
+    .verdict.pass { color: var(--mint); } .verdict.fail { color: var(--red); }
+    .grade { margin: 0 32px 48px; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 12px; }
     th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
-    th { color: var(--muted); font-weight: 500; }
-    .ok { color: var(--pass); } .no { color: var(--fail); }
+    th { color: var(--muted); }
+    .ok { color: var(--mint); } .no { color: var(--red); }
     .changed { background: #2d2718; border-radius: 8px; padding: 8px; outline: 1px solid #5c4a1f; }
     .added { background: #14261c; border-radius: 8px; padding: 8px; outline: 1px solid #1f5c3a; }
-    .frozen { opacity: 0.72; }
-    .delta {
-      margin: 0 22px 12px; padding: 12px 14px; border-radius: 8px;
-      background: var(--panel); border: 1px solid var(--line); font-size: 13px;
+    @media (max-width: 980px) {
+      .pipe, .grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; }
     }
-    .delta b { display: block; margin-bottom: 4px; }
-    .kind { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 6px; color: var(--muted); }
-    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <header>
     <div>
-      <h1>PromiseLedger</h1>
-      <p>Pick a case, then run the agent. It reads four apps, writes only if the join is unique, and a separate grader scores final state.</p>
+      <h1 class="brand">PromiseLedger</h1>
+      <p class="lede">A multi-step tool agent. It does not chat. It snapshots Linear, GitHub, Gmail, and Slack, joins on immutable IDs, writes only allowlisted mutations, re-reads, then an independent grader scores final world state.</p>
     </div>
     <button class="run" id="run">Run agent</button>
   </header>
-  <div class="tabs" id="tabs"></div>
-  <p class="hint" id="blurb"></p>
-  <section class="grid">
-    <div class="col"><h3>Before — seeded world</h3><div id="before"></div></div>
-    <div class="col"><h3>Agent log</h3><ul class="log" id="log"><li class="empty">Press Run agent. Nothing has executed yet.</li></ul></div>
-    <div class="col"><h3>After — re-read state</h3><div id="after"><div class="empty">Waiting for a run.</div></div></div>
+
+  <div class="orbs">
+    <div class="orb"><span class="dot"></span>Linear adapter</div>
+    <div class="orb"><span class="dot"></span>GitHub adapter · read-only</div>
+    <div class="orb"><span class="dot"></span>Gmail adapter · drafts only</div>
+    <div class="orb"><span class="dot"></span>Slack adapter · not source of truth</div>
+    <div class="orb"><span class="dot"></span>Same planner as live APIs</div>
+  </div>
+
+  <div class="pipe">
+    <div class="stage"><b>1 · Snapshot</b><span>Four typed adapters. Fixture or live HTTP. Identical interface.</span></div>
+    <div class="stage"><b>2 · Join</b><span>PL-102, customer ID, email. Names are never keys.</span></div>
+    <div class="stage"><b>3 · Classify</b><span>Pure function. No model. HEALTHY / DESYNC / BREACHED.</span></div>
+    <div class="stage"><b>4 · Plan + write</b><span>Reopen, evidence, unsent draft, digest. Send is impossible.</span></div>
+    <div class="stage"><b>5 · Read-back</b><span>HTTP 200 is not success. World must change.</span></div>
+    <div class="stage"><b>6 · Grade</b><span>Separate process. Trusts apps, never the agent log.</span></div>
+  </div>
+
+  <section class="why">
+    <h2>This is the agent. Fixtures are how you prove it.</h2>
+    <p>
+      Judges can clone the repo and run the same planner without secrets. Each adapter speaks the contract of the real API (Linear GraphQL, GitHub REST, Gmail drafts, Slack chat.postMessage). Live mode is <code>run-live</code> against a disposable workspace — a public URL must not hold your inbox token. The scored artifact is not “we called GPT.” It is: bounded writes across three acting apps, an unsent human-review draft, and a grader that fails when Linear returns 200 and the ticket is still Done.
+    </p>
   </section>
-  <div class="delta" id="delta">Before and After are supposed to match on freeze/refuse cases. Run a write case (Claimed-but-not-done) to see status, draft, and Slack change.</div>
+
+  <div class="tabs" id="tabs"></div>
+  <section class="grid">
+    <div class="col"><h3>World before</h3><div id="before"></div></div>
+    <div class="col"><h3>Tool trace</h3><ul class="log" id="log"><li>Idle. Press Run agent.</li></ul></div>
+    <div class="col"><h3>World after · re-read</h3><div id="after"><div class="empty">Waiting.</div></div></div>
+  </section>
+  <div class="delta" id="delta">Write cases change status + draft. Freeze cases must match — that is the pass.</div>
   <div class="verdict" id="verdict">Idle</div>
   <div class="grade" id="grade"></div>
+
   <script>
     const FEATURED = ["s2-desync", "s3-done-unrecorded", "s4-breached", "s6-ambiguous-contact", "s10-silent-200"];
     const state = { scenarios: [], current: "s2-desync" };
@@ -118,20 +168,20 @@
         const old = beforeTickets[t.id];
         const statusChanged = old && old.status !== t.status;
         const commentsAdded = old && (t.comments || []).length > (old.comments || []).length;
-        const cls = statusChanged || commentsAdded ? "changed" : (prior && old ? "frozen" : "");
+        const cls = statusChanged || commentsAdded ? "changed" : "";
         const newComments = (t.comments || []).slice(old ? (old.comments || []).length : (t.comments || []).length);
         return `<div class="${cls}">
           <div class="row"><span><b>${t.key}</b> · ${t.title}</span><span class="badge ${t.status}">${old && statusChanged ? old.status + " → " : ""}${t.status}</span></div>
-          <div class="meta">proof ${t.required_proof || "none"} · ${t.customer_id || "no customer id"}</div>
-          ${newComments.map((c) => `<div class="meta">comment: ${(c.body || "").slice(0, 140)}</div>`).join("")}
+          <div class="meta">join ${t.required_proof || "none"} · ${t.customer_id || "no customer id"}</div>
+          ${newComments.map((c) => `<div class="meta">${(c.body || "").slice(0, 160)}</div>`).join("")}
         </div>`;
       }).join("") : `<div class="empty">No tickets</div>`;
       const prHtml = prs.length ? prs.map((p) =>
         `<div class="row"><span>PR ${p.number || p.id}</span><span class="badge">${p.merged ? "merged" : "open"}</span></div>
-         <div class="meta">${(p.linked_ticket_keys || []).join(", ") || "unlinked"} · GitHub is read-only</div>`
+         <div class="meta">${(p.linked_ticket_keys || []).join(", ") || "unlinked"} · GitHub never written</div>`
       ).join("") : `<div class="empty">No pull requests</div>`;
       const mailHtml = (sent.length || drafts.length)
-        ? sent.map((m) => `<div class="row"><span>${m.to || m.ticket_key}</span><span class="badge SENT">SENT</span></div>`).join("") +
+        ? sent.map((m) => `<div class="row"><span>${m.to || m.ticket_key}</span><span class="badge SENT">SENT proof</span></div>`).join("") +
           drafts.map((d) => {
             const added = prior && !beforeDrafts.has(d.id);
             return `<div class="${added ? "added" : ""}"><div class="row"><span>To ${d.to}</span><span class="badge DRAFT">${added ? "new unsent draft" : "unsent draft"}</span></div><div class="mail">${d.body || ""}</div></div>`;
@@ -141,7 +191,7 @@
         ? slack.map((m) => {
             const added = prior && !beforeSlack.has(m.id);
             const digest = (m.idempotency_key || "").startsWith("promiseledger:digest:");
-            return `<div class="${added ? "added" : ""}"><div class="meta">${added ? "new " : ""}${digest ? "Agent digest" : "Human claim"}</div><div class="mail">${m.text}</div></div>`;
+            return `<div class="${added ? "added" : ""}"><div class="meta">${added ? "new " : ""}${digest ? "Agent digest" : "Human claim — not proof"}</div><div class="mail">${m.text}</div></div>`;
           }).join("")
         : `<div class="empty">No messages</div>`;
       return `<div class="app"><div class="app-name">Linear</div>${ticketsHtml}</div>
@@ -151,9 +201,7 @@
     }
 
     function diffSummary(initial, final, report) {
-      if (report.refused) {
-        return "What changed: nothing. That is the pass — ambiguous or missing IDs get zero writes, so Before and After must match.";
-      }
+      if (report.refused) return "Delta: none. Refuse path. Identical worlds are the pass.";
       const lines = [];
       const beforeT = Object.fromEntries((initial.linear.tickets || []).map((t) => [t.id, t]));
       for (const t of final.linear.tickets || []) {
@@ -161,31 +209,25 @@
         if (!b) continue;
         if (b.status !== t.status) lines.push(`${t.key} ${b.status} → ${t.status}`);
         const added = (t.comments || []).length - (b.comments || []).length;
-        if (added > 0) lines.push(`${t.key} +${added} evidence comment`);
+        if (added > 0) lines.push(`${t.key} +evidence`);
       }
-      const drafts = (final.gmail.drafts || []).length - (initial.gmail.drafts || []).length;
-      if (drafts > 0) lines.push(`Gmail +${drafts} unsent draft (still not sent)`);
-      const slack = (final.slack.messages || []).length - (initial.slack.messages || []).length;
-      if (slack > 0) lines.push(`Slack +${slack} digest`);
-      if (!lines.length) {
-        return "What changed: Linear returned HTTP 200 but the ticket status did not move. The grader fails this on purpose.";
-      }
-      return "What changed: " + lines.join(" · ");
+      if ((final.gmail.drafts || []).length > (initial.gmail.drafts || []).length) lines.push("Gmail +unsent draft");
+      if ((final.slack.messages || []).length > (initial.slack.messages || []).length) lines.push("Slack +digest");
+      return lines.length ? "Delta: " + lines.join(" · ") : "Delta: status stuck after HTTP 200. Grader fails the run.";
     }
 
     async function preview(id) {
       state.current = id;
       [...el("tabs").children].forEach((n) => n.classList.toggle("active", n.dataset.id === id));
       const card = state.scenarios.find((s) => s.id === id);
-      el("blurb").textContent = card ? `${card.blurb} Expected: ${card.expect}.` : "";
       el("verdict").className = "verdict";
-      el("verdict").textContent = "Idle — press Run agent";
+      el("verdict").textContent = "Idle";
       el("grade").innerHTML = "";
-      el("after").innerHTML = `<div class="empty">Waiting for a run.</div>`;
+      el("after").innerHTML = `<div class="empty">Waiting for Run agent.</div>`;
       el("delta").textContent = card && card.delta === "freeze"
-        ? "This case should look the same after you run it. Matching panels means the agent refused or no-op'd correctly."
-        : "Run the agent. After should differ on write cases (status, unsent draft, Slack digest).";
-      el("log").innerHTML = `<li>Press Run agent. Nothing has executed yet.</li>`;
+        ? "Freeze case: After must match Before."
+        : "Write case: After should show a status change and/or a new unsent draft.";
+      el("log").innerHTML = `<li>Planner loaded · ${id}</li>`;
       const data = await (await fetch("/api/run?scenario=" + encodeURIComponent(id))).json();
       el("before").innerHTML = worldView(data.initial);
     }
@@ -193,9 +235,8 @@
     async function run() {
       const button = el("run");
       button.disabled = true;
-      button.textContent = "Running…";
-      el("log").innerHTML = "<li>POST /api/run — executing agent</li>";
-      el("verdict").textContent = "Running";
+      button.textContent = "Running";
+      el("log").innerHTML = "<li>agent.loop · snapshot → join → classify → write → read-back → grade</li>";
       try {
         const data = await (await fetch("/api/run", {
           method: "POST",
@@ -203,14 +244,13 @@
           body: JSON.stringify({ scenario: state.current }),
         })).json();
         el("before").innerHTML = worldView(data.initial);
-        const steps = data.steps || [];
         el("log").innerHTML = "";
-        for (const step of steps) {
+        for (const step of data.steps || []) {
           const li = document.createElement("li");
           li.className = step.kind || "";
           li.textContent = step.text;
           el("log").appendChild(li);
-          await new Promise((r) => setTimeout(r, 180));
+          await new Promise((r) => setTimeout(r, 140));
         }
         el("after").innerHTML = worldView(data.final, data.initial);
         el("delta").textContent = diffSummary(data.initial, data.final, data.report);
@@ -218,10 +258,10 @@
         const passed = data.grade.passed;
         el("verdict").className = "verdict " + ((expectedFail ? !passed : passed) ? "pass" : "fail");
         el("verdict").textContent = expectedFail
-          ? (passed ? "Unexpected pass" : "Caught silent HTTP 200 — grader failed the run on purpose")
-          : (data.report.refused ? "Refused — zero writes" : (passed ? "Grader pass" : "Grader fail"));
+          ? "Silent 200 caught. Agent did not claim success. Grader failed the world — this is the demo."
+          : (data.report.refused ? "Refused. Zero writes. That is the agent." : (passed ? "Grader pass on final app state." : "Grader fail."));
         const groups = Object.entries(data.grade.groups || {});
-        el("grade").innerHTML = `<table><thead><tr><th>Check</th><th></th><th>Evidence</th></tr></thead><tbody>${
+        el("grade").innerHTML = `<table><thead><tr><th>Invariant</th><th></th><th>Final-state evidence</th></tr></thead><tbody>${
           groups.map(([name, g]) => `<tr><td>${name}</td><td class="${g.passed ? "ok" : "no"}">${g.passed ? "Pass" : "Fail"}</td><td>${g.detail}</td></tr>`).join("")
         }</tbody></table>`;
       } catch (error) {
@@ -239,7 +279,7 @@
       const rest = data.scenarios.filter((s) => !FEATURED.includes(s.id));
       state.scenarios = [...featured, ...rest];
       el("tabs").innerHTML = state.scenarios.map((s) =>
-        `<button data-id="${s.id}" class="${s.id === state.current ? "active" : ""}">${s.title}<span class="kind">${s.delta === "freeze" ? "same on purpose" : s.delta === "fault" ? "status stuck" : "writes"}</span></button>`
+        `<button data-id="${s.id}" class="${s.id === state.current ? "active" : ""}">${s.title}<span class="kind">${s.delta === "freeze" ? "freeze" : s.delta === "fault" ? "fault" : "write"}</span></button>`
       ).join("");
       el("tabs").onclick = (event) => {
         const button = event.target.closest("button");
