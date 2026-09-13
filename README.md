@@ -4,6 +4,8 @@
 
 Done in Linear is a claim. A merged GitHub PR or a sent customer email is proof. The agent joins four apps on immutable IDs, writes only what is allowed, never sends mail, and an independent grader scores **final app state**.
 
+![s2 — claimed-but-not-done: Done → Reopened, unsent Gmail draft, Slack ignored](docs/console-after.png)
+
 ## Apps
 
 | App | Action |
@@ -49,3 +51,9 @@ HTTP 200 is not success. Slack is not proof. No LLM picks IDs.
 ## Demo video
 
 https://promiseledger.vercel.app — s2 write, s6 refuse, s10 silent 200.
+
+Idle world before a run:
+
+![Before: Linear Done, no PR, Slack already claimed shipped](docs/console-before.png)
+
+Slides (optional, not the product): [docs/PromiseLedger.pptx](docs/PromiseLedger.pptx)
