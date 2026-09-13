@@ -69,6 +69,15 @@
     th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
     th { color: var(--muted); font-weight: 500; }
     .ok { color: var(--pass); } .no { color: var(--fail); }
+    .changed { background: #2d2718; border-radius: 8px; padding: 8px; outline: 1px solid #5c4a1f; }
+    .added { background: #14261c; border-radius: 8px; padding: 8px; outline: 1px solid #1f5c3a; }
+    .frozen { opacity: 0.72; }
+    .delta {
+      margin: 0 22px 12px; padding: 12px 14px; border-radius: 8px;
+      background: var(--panel); border: 1px solid var(--line); font-size: 13px;
+    }
+    .delta b { display: block; margin-bottom: 4px; }
+    .kind { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 6px; color: var(--muted); }
     @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -87,39 +96,81 @@
     <div class="col"><h3>Agent log</h3><ul class="log" id="log"><li class="empty">Press Run agent. Nothing has executed yet.</li></ul></div>
     <div class="col"><h3>After — re-read state</h3><div id="after"><div class="empty">Waiting for a run.</div></div></div>
   </section>
+  <div class="delta" id="delta">Before and After are supposed to match on freeze/refuse cases. Run a write case (Claimed-but-not-done) to see status, draft, and Slack change.</div>
   <div class="verdict" id="verdict">Idle</div>
   <div class="grade" id="grade"></div>
   <script>
-    const FEATURED = ["s2-desync", "s6-ambiguous-contact", "s10-silent-200"];
+    const FEATURED = ["s2-desync", "s3-done-unrecorded", "s4-breached", "s6-ambiguous-contact", "s10-silent-200"];
     const state = { scenarios: [], current: "s2-desync" };
     const el = (id) => document.getElementById(id);
 
-    function worldView(world) {
+    function worldView(world, prior) {
       if (!world) return `<div class="empty">No snapshot</div>`;
+      const beforeTickets = Object.fromEntries((prior?.linear?.tickets || []).map((t) => [t.id, t]));
+      const beforeDrafts = new Set((prior?.gmail?.drafts || []).map((d) => d.id));
+      const beforeSlack = new Set((prior?.slack?.messages || []).map((m) => m.id));
       const tickets = world.linear.tickets || [];
       const prs = world.github.pull_requests || [];
       const sent = (world.gmail.messages || []).filter((m) => (m.labels || []).includes("SENT"));
       const drafts = world.gmail.drafts || [];
       const slack = world.slack.messages || [];
-      const ticketsHtml = tickets.length ? tickets.map((t) =>
-        `<div class="row"><span><b>${t.key}</b> · ${t.title}</span><span class="badge ${t.status}">${t.status}</span></div>
-         <div class="meta">proof ${t.required_proof || "none"} · ${t.customer_id || "no customer id"}</div>`
-      ).join("") : `<div class="empty">No tickets</div>`;
+      const ticketsHtml = tickets.length ? tickets.map((t) => {
+        const old = beforeTickets[t.id];
+        const statusChanged = old && old.status !== t.status;
+        const commentsAdded = old && (t.comments || []).length > (old.comments || []).length;
+        const cls = statusChanged || commentsAdded ? "changed" : (prior && old ? "frozen" : "");
+        const newComments = (t.comments || []).slice(old ? (old.comments || []).length : (t.comments || []).length);
+        return `<div class="${cls}">
+          <div class="row"><span><b>${t.key}</b> · ${t.title}</span><span class="badge ${t.status}">${old && statusChanged ? old.status + " → " : ""}${t.status}</span></div>
+          <div class="meta">proof ${t.required_proof || "none"} · ${t.customer_id || "no customer id"}</div>
+          ${newComments.map((c) => `<div class="meta">comment: ${(c.body || "").slice(0, 140)}</div>`).join("")}
+        </div>`;
+      }).join("") : `<div class="empty">No tickets</div>`;
       const prHtml = prs.length ? prs.map((p) =>
         `<div class="row"><span>PR ${p.number || p.id}</span><span class="badge">${p.merged ? "merged" : "open"}</span></div>
-         <div class="meta">${(p.linked_ticket_keys || []).join(", ") || "unlinked"}</div>`
+         <div class="meta">${(p.linked_ticket_keys || []).join(", ") || "unlinked"} · GitHub is read-only</div>`
       ).join("") : `<div class="empty">No pull requests</div>`;
       const mailHtml = (sent.length || drafts.length)
         ? sent.map((m) => `<div class="row"><span>${m.to || m.ticket_key}</span><span class="badge SENT">SENT</span></div>`).join("") +
-          drafts.map((d) => `<div class="row"><span>To ${d.to}</span><span class="badge DRAFT">unsent draft</span></div><div class="mail">${d.body || ""}</div>`).join("")
+          drafts.map((d) => {
+            const added = prior && !beforeDrafts.has(d.id);
+            return `<div class="${added ? "added" : ""}"><div class="row"><span>To ${d.to}</span><span class="badge DRAFT">${added ? "new unsent draft" : "unsent draft"}</span></div><div class="mail">${d.body || ""}</div></div>`;
+          }).join("")
         : `<div class="empty">No mail</div>`;
       const slackHtml = slack.length
-        ? slack.map((m) => `<div class="meta">${(m.idempotency_key || "").startsWith("promiseledger:digest:") ? "Agent digest" : "Human claim"}</div><div class="mail">${m.text}</div>`).join("")
+        ? slack.map((m) => {
+            const added = prior && !beforeSlack.has(m.id);
+            const digest = (m.idempotency_key || "").startsWith("promiseledger:digest:");
+            return `<div class="${added ? "added" : ""}"><div class="meta">${added ? "new " : ""}${digest ? "Agent digest" : "Human claim"}</div><div class="mail">${m.text}</div></div>`;
+          }).join("")
         : `<div class="empty">No messages</div>`;
       return `<div class="app"><div class="app-name">Linear</div>${ticketsHtml}</div>
         <div class="app"><div class="app-name">GitHub</div>${prHtml}</div>
         <div class="app"><div class="app-name">Gmail</div>${mailHtml}</div>
         <div class="app"><div class="app-name">Slack</div>${slackHtml}</div>`;
+    }
+
+    function diffSummary(initial, final, report) {
+      if (report.refused) {
+        return "What changed: nothing. That is the pass — ambiguous or missing IDs get zero writes, so Before and After must match.";
+      }
+      const lines = [];
+      const beforeT = Object.fromEntries((initial.linear.tickets || []).map((t) => [t.id, t]));
+      for (const t of final.linear.tickets || []) {
+        const b = beforeT[t.id];
+        if (!b) continue;
+        if (b.status !== t.status) lines.push(`${t.key} ${b.status} → ${t.status}`);
+        const added = (t.comments || []).length - (b.comments || []).length;
+        if (added > 0) lines.push(`${t.key} +${added} evidence comment`);
+      }
+      const drafts = (final.gmail.drafts || []).length - (initial.gmail.drafts || []).length;
+      if (drafts > 0) lines.push(`Gmail +${drafts} unsent draft (still not sent)`);
+      const slack = (final.slack.messages || []).length - (initial.slack.messages || []).length;
+      if (slack > 0) lines.push(`Slack +${slack} digest`);
+      if (!lines.length) {
+        return "What changed: Linear returned HTTP 200 but the ticket status did not move. The grader fails this on purpose.";
+      }
+      return "What changed: " + lines.join(" · ");
     }
 
     async function preview(id) {
@@ -131,6 +182,9 @@
       el("verdict").textContent = "Idle — press Run agent";
       el("grade").innerHTML = "";
       el("after").innerHTML = `<div class="empty">Waiting for a run.</div>`;
+      el("delta").textContent = card && card.delta === "freeze"
+        ? "This case should look the same after you run it. Matching panels means the agent refused or no-op'd correctly."
+        : "Run the agent. After should differ on write cases (status, unsent draft, Slack digest).";
       el("log").innerHTML = `<li>Press Run agent. Nothing has executed yet.</li>`;
       const data = await (await fetch("/api/run?scenario=" + encodeURIComponent(id))).json();
       el("before").innerHTML = worldView(data.initial);
@@ -158,7 +212,8 @@
           el("log").appendChild(li);
           await new Promise((r) => setTimeout(r, 180));
         }
-        el("after").innerHTML = worldView(data.final);
+        el("after").innerHTML = worldView(data.final, data.initial);
+        el("delta").textContent = diffSummary(data.initial, data.final, data.report);
         const expectedFail = state.current === "s10-silent-200";
         const passed = data.grade.passed;
         el("verdict").className = "verdict " + ((expectedFail ? !passed : passed) ? "pass" : "fail");
@@ -184,7 +239,7 @@
       const rest = data.scenarios.filter((s) => !FEATURED.includes(s.id));
       state.scenarios = [...featured, ...rest];
       el("tabs").innerHTML = state.scenarios.map((s) =>
-        `<button data-id="${s.id}" class="${s.id === state.current ? "active" : ""}">${s.title}</button>`
+        `<button data-id="${s.id}" class="${s.id === state.current ? "active" : ""}">${s.title}<span class="kind">${s.delta === "freeze" ? "same on purpose" : s.delta === "fault" ? "status stuck" : "writes"}</span></button>`
       ).join("");
       el("tabs").onclick = (event) => {
         const button = event.target.closest("button");
