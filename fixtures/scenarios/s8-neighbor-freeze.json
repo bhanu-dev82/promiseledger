@@ -1,0 +1,75 @@
+{
+  "faults": {},
+  "github": {
+    "pull_requests": [
+      {
+        "body": "Implements exact commitment PL-208.",
+        "id": "gh-pr-208",
+        "merged": true,
+        "merged_at": "2026-09-10T12:00:00Z",
+        "number": 208,
+        "title": "Deliver PL-208",
+        "url": "https://github.example/promiseledger/pull/208"
+      }
+    ]
+  },
+  "gmail": {
+    "contacts": [
+      {
+        "customer_id": "cust-108",
+        "email": "owner108@example.test",
+        "id": "contact-cust-108",
+        "name": "Customer 108"
+      },
+      {
+        "customer_id": "cust-208",
+        "email": "owner208@example.test",
+        "id": "contact-cust-208",
+        "name": "Customer 208"
+      }
+    ],
+    "drafts": [],
+    "messages": []
+  },
+  "linear": {
+    "tickets": [
+      {
+        "comments": [],
+        "customer_id": "cust-108",
+        "customer_name": "Acme Owner",
+        "due_date": "2026-09-20",
+        "id": "lin-108",
+        "key": "PL-108",
+        "required_proof": "merged_pr",
+        "status": "Done",
+        "title": "Deliver tenant metrics"
+      },
+      {
+        "comments": [],
+        "customer_id": "cust-208",
+        "customer_name": "Acme Owner",
+        "due_date": "2026-09-10",
+        "id": "lin-208",
+        "key": "PL-208",
+        "required_proof": "merged_pr",
+        "status": "Done",
+        "title": "Protected neighboring tenant export"
+      }
+    ]
+  },
+  "scenario": {
+    "expected_grader": "pass",
+    "id": "s8-neighbor-freeze",
+    "now": "2026-09-13",
+    "protected_ticket_ids": [
+      "lin-208"
+    ],
+    "replay": false
+  },
+  "schema_version": 1,
+  "slack": {
+    "channel_id": "C-ENG-UPDATES",
+    "messages": []
+  },
+  "writes": []
+}

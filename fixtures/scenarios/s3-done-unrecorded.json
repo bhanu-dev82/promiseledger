@@ -1,0 +1,56 @@
+{
+  "faults": {},
+  "github": {
+    "pull_requests": [
+      {
+        "body": "Implements exact commitment PL-103.",
+        "id": "gh-pr-103",
+        "merged": true,
+        "merged_at": "2026-09-10T12:00:00Z",
+        "number": 103,
+        "title": "Deliver PL-103",
+        "url": "https://github.example/promiseledger/pull/103"
+      }
+    ]
+  },
+  "gmail": {
+    "contacts": [
+      {
+        "customer_id": "cust-103",
+        "email": "owner103@example.test",
+        "id": "contact-cust-103",
+        "name": "Customer 103"
+      }
+    ],
+    "drafts": [],
+    "messages": []
+  },
+  "linear": {
+    "tickets": [
+      {
+        "comments": [],
+        "customer_id": "cust-103",
+        "customer_name": "Acme Owner",
+        "due_date": "2026-09-20",
+        "id": "lin-103",
+        "key": "PL-103",
+        "required_proof": "merged_pr",
+        "status": "In Progress",
+        "title": "Add audit log filters"
+      }
+    ]
+  },
+  "scenario": {
+    "expected_grader": "pass",
+    "id": "s3-done-unrecorded",
+    "now": "2026-09-13",
+    "protected_ticket_ids": [],
+    "replay": false
+  },
+  "schema_version": 1,
+  "slack": {
+    "channel_id": "C-ENG-UPDATES",
+    "messages": []
+  },
+  "writes": []
+}

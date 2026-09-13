@@ -1,0 +1,46 @@
+{
+  "faults": {},
+  "github": {
+    "pull_requests": []
+  },
+  "gmail": {
+    "contacts": [
+      {
+        "customer_id": "cust-107",
+        "email": "owner107@example.test",
+        "id": "contact-cust-107",
+        "name": "Customer 107"
+      }
+    ],
+    "drafts": [],
+    "messages": []
+  },
+  "linear": {
+    "tickets": [
+      {
+        "comments": [],
+        "customer_id": "cust-107",
+        "customer_name": "Acme Owner",
+        "due_date": "2026-09-09",
+        "id": "lin-107",
+        "key": "PL-107",
+        "required_proof": "merged_pr",
+        "status": "In Progress",
+        "title": "Restore webhook delivery"
+      }
+    ]
+  },
+  "scenario": {
+    "expected_grader": "pass",
+    "id": "s7-replay",
+    "now": "2026-09-13",
+    "protected_ticket_ids": [],
+    "replay": true
+  },
+  "schema_version": 1,
+  "slack": {
+    "channel_id": "C-ENG-UPDATES",
+    "messages": []
+  },
+  "writes": []
+}

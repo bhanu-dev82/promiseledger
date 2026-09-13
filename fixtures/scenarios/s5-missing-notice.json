@@ -1,0 +1,56 @@
+{
+  "faults": {},
+  "github": {
+    "pull_requests": [
+      {
+        "body": "Implements exact commitment PL-105.",
+        "id": "gh-pr-105",
+        "merged": true,
+        "merged_at": "2026-09-10T12:00:00Z",
+        "number": 105,
+        "title": "Deliver PL-105",
+        "url": "https://github.example/promiseledger/pull/105"
+      }
+    ]
+  },
+  "gmail": {
+    "contacts": [
+      {
+        "customer_id": "cust-105",
+        "email": "owner105@example.test",
+        "id": "contact-cust-105",
+        "name": "Customer 105"
+      }
+    ],
+    "drafts": [],
+    "messages": []
+  },
+  "linear": {
+    "tickets": [
+      {
+        "comments": [],
+        "customer_id": "cust-105",
+        "customer_name": "Acme Owner",
+        "due_date": "2026-09-10",
+        "id": "lin-105",
+        "key": "PL-105",
+        "required_proof": "sent_email",
+        "status": "Done",
+        "title": "Notify customer about migration"
+      }
+    ]
+  },
+  "scenario": {
+    "expected_grader": "pass",
+    "id": "s5-missing-notice",
+    "now": "2026-09-13",
+    "protected_ticket_ids": [],
+    "replay": false
+  },
+  "schema_version": 1,
+  "slack": {
+    "channel_id": "C-ENG-UPDATES",
+    "messages": []
+  },
+  "writes": []
+}

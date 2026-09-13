@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PromiseLedger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #f4f1ea;
+      --ink: #161410;
+      --muted: #6f6a60;
+      --line: #e3ddd2;
+      --white: #fffcf7;
+      --indigo: #5b54d6;
+      --indigo-soft: #ecebff;
+      --pass: #1f7a4d;
+      --fail: #b42318;
+      --warn: #9a6700;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 15px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 36px 24px 80px; }
+    header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-end; margin-bottom: 36px; }
+    .wordmark { font-family: "Instrument Serif", Georgia, serif; font-size: 42px; letter-spacing: -0.03em; margin: 0; }
+    header p { margin: 8px 0 0; color: var(--muted); max-width: 520px; }
+    .run {
+      background: var(--ink);
+      color: var(--white);
+      border: 0;
+      height: 44px;
+      padding: 0 20px;
+      border-radius: 999px;
+      font: 600 14px Inter, sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .run:disabled { opacity: 0.45; cursor: wait; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .tabs button {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font: 500 13px Inter, sans-serif;
+      cursor: pointer;
+    }
+    .tabs button.active { background: var(--indigo-soft); border-color: transparent; color: var(--indigo); }
+    .story {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      margin-bottom: 28px;
+      align-items: start;
+    }
+    .story h2 { font-family: "Instrument Serif", Georgia, serif; font-size: 32px; font-weight: 400; margin: 0 0 10px; letter-spacing: -0.03em; }
+    .story p { margin: 0; color: var(--muted); }
+    .verdict {
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .verdict.pass { color: var(--pass); }
+    .verdict.fail { color: var(--fail); }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .col {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      min-height: 420px;
+    }
+    .col h3 {
+      margin: 0;
+      padding: 16px 20px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+    }
+    .app { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    .app:last-child { border-bottom: 0; }
+    .app-name { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .ticket { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .key { font-weight: 600; }
+    .title { color: var(--ink); }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #eeeae1;
+    }
+    .badge.Done { background: #e3f6ea; color: var(--pass); }
+    .badge.Reopened, .badge.Breached { background: #fff3d6; color: var(--warn); }
+    .badge.DRAFT { background: var(--indigo-soft); color: var(--indigo); }
+    .badge.SENT { background: #e3f6ea; color: var(--pass); }
+    .meta { margin-top: 6px; color: var(--muted); font-size: 13px; }
+    .mail {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #f7f4ed;
+      font-size: 13px;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .empty { color: var(--muted); font-size: 13px; }
+    .grade { margin-top: 28px; background: var(--white); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    th { color: var(--muted); font-weight: 500; }
+    tr:last-child td { border-bottom: 0; }
+    .ok { color: var(--pass); font-weight: 600; }
+    .no { color: var(--fail); font-weight: 600; }
+    footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
+    @media (max-width: 860px) {
+      header, .story, .compare { grid-template-columns: 1fr; }
+      .wordmark { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 class="wordmark">PromiseLedger</h1>
+        <p>Done in Linear is a claim. A merged pull request or a sent customer email is proof. The agent reconciles the four apps and never sends mail.</p>
+      </div>
+      <button class="run" id="run">Run this case</button>
+    </header>
+    <div class="tabs" id="tabs"></div>
+    <section class="story">
+      <div>
+        <h2 id="title">Claimed, but not done</h2>
+        <p id="blurb"></p>
+        <div class="verdict" id="verdict">Not run yet</div>
+      </div>
+      <p id="expect" style="margin:0;color:var(--muted)"></p>
+    </section>
+    <section class="compare">
+      <div class="col"><h3>Before</h3><div id="before"></div></div>
+      <div class="col"><h3>After</h3><div id="after"></div></div>
+    </section>
+    <section class="grade" id="grade"></section>
+    <footer>Deterministic tool agent. No model in the loop. Same code as the test suite.</footer>
+  </div>
+  <script>
+    const FEATURED = ["s2-desync", "s6-ambiguous-contact", "s10-silent-200"];
+    const state = { scenarios: [], current: "s2-desync", result: null };
+
+    const el = (id) => document.getElementById(id);
+
+    function worldView(world) {
+      if (!world) return `<div class="app"><div class="empty">Run the case to see after-state.</div></div>`;
+      const tickets = world.linear.tickets || [];
+      const prs = world.github.pull_requests || [];
+      const sent = (world.gmail.messages || []).filter((m) => (m.labels || []).includes("SENT"));
+      const drafts = world.gmail.drafts || [];
+      const slack = world.slack.messages || [];
+      const ticketHtml = tickets.length
+        ? tickets.map((t) => `
+            <div class="ticket"><span><span class="key">${t.key}</span> · ${t.title}</span>
+            <span class="badge ${t.status}">${t.status}</span></div>
+            <div class="meta">proof ${t.required_proof || "none"} · ${t.customer_id || "no customer id"}</div>
+          `).join("")
+        : `<div class="empty">No tickets</div>`;
+      const prHtml = prs.length
+        ? prs.map((p) => `<div class="ticket"><span>PR ${p.number || p.id}</span><span class="badge">${p.merged ? "merged" : "open"}</span></div>
+            <div class="meta">${(p.linked_ticket_keys || []).join(", ") || "unlinked"}</div>`).join("")
+        : `<div class="empty">No pull requests</div>`;
+      const mailHtml = (sent.length || drafts.length)
+        ? sent.map((m) => `<div class="ticket"><span>${m.to || m.ticket_key}</span><span class="badge SENT">SENT</span></div>`).join("") +
+          drafts.map((d) => `<div class="ticket"><span>To ${d.to}</span><span class="badge DRAFT">unsent draft</span></div><div class="mail">${d.body || ""}</div>`).join("")
+        : `<div class="empty">No mail</div>`;
+      const slackHtml = slack.length
+        ? slack.map((m) => `<div class="meta">${(m.idempotency_key || "").startsWith("promiseledger:digest:") ? "Agent digest" : "Human claim"}</div><div class="mail">${m.text}</div>`).join("")
+        : `<div class="empty">No messages</div>`;
+      return `
+        <div class="app"><div class="app-name">Linear</div>${ticketHtml}</div>
+        <div class="app"><div class="app-name">GitHub</div>${prHtml}</div>
+        <div class="app"><div class="app-name">Gmail</div>${mailHtml}</div>
+        <div class="app"><div class="app-name">Slack</div>${slackHtml}</div>`;
+    }
+
+    function setScenario(id, skipRun) {
+      state.current = id;
+      const card = state.scenarios.find((s) => s.id === id);
+      [...el("tabs").children].forEach((node) => node.classList.toggle("active", node.dataset.id === id));
+      el("title").textContent = card ? card.title : id;
+      el("blurb").textContent = card ? card.blurb : "";
+      el("expect").textContent = card ? card.expect : "";
+      el("verdict").textContent = "Not run yet";
+      el("verdict").className = "verdict";
+      el("grade").innerHTML = "";
+      el("after").innerHTML = worldView(null);
+      if (!skipRun) run();
+    }
+
+    async function load() {
+      const data = await (await fetch("/api/run")).json();
+      const featured = FEATURED.map((id) => data.scenarios.find((s) => s.id === id)).filter(Boolean);
+      const rest = data.scenarios.filter((s) => !FEATURED.includes(s.id));
+      state.scenarios = [...featured, ...rest];
+      el("tabs").innerHTML = state.scenarios.map((s, index) =>
+        `<button data-id="${s.id}" class="${s.id === state.current ? "active" : ""}">${index < 3 ? "" : ""}${s.title}</button>`
+      ).join("");
+      el("tabs").onclick = (event) => {
+        const button = event.target.closest("button");
+        if (button) setScenario(button.dataset.id);
+      };
+    }
+
+    async function run() {
+      const button = el("run");
+      button.disabled = true;
+      button.textContent = "Running";
+      try {
+        const data = await (await fetch("/api/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scenario: state.current }),
+        })).json();
+        state.result = data;
+        el("before").innerHTML = worldView(data.initial);
+        el("after").innerHTML = worldView(data.final);
+        const expectedFail = state.current === "s10-silent-200";
+        const passed = data.grade.passed;
+        el("verdict").className = "verdict " + ((expectedFail ? !passed : passed) ? "pass" : "fail");
+        el("verdict").textContent = expectedFail
+          ? (passed ? "Unexpected pass" : "Caught silent HTTP 200")
+          : (data.report.refused ? "Refused — zero writes" : (passed ? "Grader pass" : "Grader fail"));
+        const groups = Object.entries(data.grade.groups || {});
+        el("grade").innerHTML = `<table><thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead><tbody>${
+          groups.map(([name, g]) => `<tr><td>${name}</td><td class="${g.passed ? "ok" : "no"}">${g.passed ? "Pass" : "Fail"}</td><td>${g.detail}</td></tr>`).join("")
+        }</tbody></table>`;
+      } catch (error) {
+        el("verdict").className = "verdict fail";
+        el("verdict").textContent = String(error.message || error);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Run this case";
+      }
+    }
+
+    el("run").onclick = run;
+    load().then(run);
+  </script>
+</body>
+</html>

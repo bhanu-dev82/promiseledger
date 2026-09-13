@@ -1,0 +1,70 @@
+{
+  "faults": {},
+  "github": {
+    "pull_requests": [
+      {
+        "body": "Implements exact commitment PL-101.",
+        "id": "gh-pr-101",
+        "merged": true,
+        "merged_at": "2026-09-10T12:00:00Z",
+        "number": 101,
+        "title": "Deliver PL-101",
+        "url": "https://github.example/promiseledger/pull/101"
+      }
+    ]
+  },
+  "gmail": {
+    "contacts": [
+      {
+        "customer_id": "cust-101",
+        "email": "owner101@example.test",
+        "id": "contact-cust-101",
+        "name": "Customer 101"
+      }
+    ],
+    "drafts": [],
+    "messages": [
+      {
+        "body": "The commitment tracked as PL-101 is complete.",
+        "customer_id": "cust-101",
+        "id": "gmail-sent-101",
+        "labels": [
+          "SENT"
+        ],
+        "subject": "Delivered: PL-101",
+        "ticket_key": "PL-101",
+        "to": "owner101@example.test"
+      }
+    ]
+  },
+  "linear": {
+    "tickets": [
+      {
+        "comments": [],
+        "customer_id": "cust-101",
+        "customer_name": "Acme Owner",
+        "due_date": "2026-09-10",
+        "id": "lin-101",
+        "key": "PL-101",
+        "required_proof": "merged_pr",
+        "status": "Done",
+        "title": "Ship SSO audit export"
+      }
+    ]
+  },
+  "scenario": {
+    "expected_grader": "pass",
+    "id": "s1-healthy",
+    "now": "2026-09-13",
+    "protected_ticket_ids": [
+      "lin-101"
+    ],
+    "replay": false
+  },
+  "schema_version": 1,
+  "slack": {
+    "channel_id": "C-ENG-UPDATES",
+    "messages": []
+  },
+  "writes": []
+}

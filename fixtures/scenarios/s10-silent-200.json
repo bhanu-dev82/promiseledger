@@ -1,0 +1,60 @@
+{
+  "faults": {
+    "linear.update_status": {
+      "mode": "http_200_noop",
+      "targets": [
+        "lin-102"
+      ]
+    }
+  },
+  "github": {
+    "pull_requests": []
+  },
+  "gmail": {
+    "contacts": [
+      {
+        "customer_id": "cust-102",
+        "email": "owner102@example.test",
+        "id": "contact-cust-102",
+        "name": "Customer 102"
+      }
+    ],
+    "drafts": [],
+    "messages": []
+  },
+  "linear": {
+    "tickets": [
+      {
+        "comments": [],
+        "customer_id": "cust-102",
+        "customer_name": "Acme Owner",
+        "due_date": "2026-09-20",
+        "id": "lin-102",
+        "key": "PL-102",
+        "required_proof": "merged_pr",
+        "status": "Done",
+        "title": "Deliver retention export"
+      }
+    ]
+  },
+  "scenario": {
+    "expected_grader": "fail",
+    "id": "s10-silent-200",
+    "now": "2026-09-13",
+    "protected_ticket_ids": [],
+    "replay": false
+  },
+  "schema_version": 1,
+  "slack": {
+    "channel_id": "C-ENG-UPDATES",
+    "messages": [
+      {
+        "author": "operator",
+        "channel_id": "C-ENG-UPDATES",
+        "id": "slack-claim-102",
+        "text": "PL-102 shipped and is done!"
+      }
+    ]
+  },
+  "writes": []
+}
