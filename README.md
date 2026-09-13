@@ -1,6 +1,8 @@
 # PromiseLedger
 
-**Live demo:** https://promiseledger.vercel.app
+**Demo video (≤2 min):** https://youtu.be/PqnO4F29Ho4
+
+**Live console:** https://promiseledger.vercel.app
 
 Done in Linear is a claim. A merged GitHub PR or a sent customer email is proof. The agent joins four apps on immutable IDs, writes only what is allowed, never sends mail, and an independent grader scores **final app state**.
 
@@ -47,10 +49,6 @@ Grader rebuilds the ledger from snapshots. It does not read the agent report.
 `snapshot → join (PL-102, never a name) → classify → bounded write → read-back → independent grade`
 
 HTTP 200 is not success. Slack is not proof. No LLM picks IDs.
-
-## Demo video
-
-https://promiseledger.vercel.app — s2 write, s6 refuse, s10 silent 200.
 
 Idle world before a run:
 
