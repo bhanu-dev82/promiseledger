@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
-from promiseledger.demo_api import list_scenarios, run_scenario
+from promiseledger.demo_api import list_scenarios, preview_scenario, run_scenario
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,7 +24,11 @@ class DemoHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path in {"/api/scenarios", "/api/run"}:
-            self._json(200, {"scenarios": list_scenarios()})
+            name = (parse_qs(parsed.query).get("scenario") or [None])[0]
+            if name:
+                self._json(200, preview_scenario(name))
+            else:
+                self._json(200, {"scenarios": list_scenarios()})
             return
         self._static(parsed.path)
 

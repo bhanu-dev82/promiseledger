@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 from http.server import BaseHTTPRequestHandler
+from urllib.parse import parse_qs, urlparse
 
-from promiseledger.demo_api import list_scenarios, run_scenario
+from promiseledger.demo_api import list_scenarios, preview_scenario, run_scenario
 
 
 class handler(BaseHTTPRequestHandler):
@@ -13,6 +14,11 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
+        query = parse_qs(urlparse(self.path).query)
+        name = (query.get("scenario") or [None])[0]
+        if name:
+            self._json(200, preview_scenario(name))
+            return
         self._json(200, {"scenarios": list_scenarios()})
 
     def do_POST(self) -> None:

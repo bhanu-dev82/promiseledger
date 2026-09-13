@@ -71,6 +71,18 @@ def list_scenarios() -> list[dict[str, str]]:
     ]
 
 
+def preview_scenario(name: str) -> dict[str, Any]:
+    initial = load_scenario(name)
+    card = SCENARIO_CARDS.get(name, {"title": name, "blurb": "", "expect": ""})
+    return {
+        "scenario": name,
+        "title": card["title"],
+        "blurb": card["blurb"],
+        "expect": card["expect"],
+        "initial": _public_world(initial),
+    }
+
+
 def run_scenario(name: str) -> dict[str, Any]:
     initial = load_scenario(name)
     adapter = FixtureAdapter(copy.deepcopy(initial))
@@ -94,7 +106,48 @@ def run_scenario(name: str) -> dict[str, Any]:
         "report": report.as_dict(),
         "grade": grade.as_dict(),
         "grade_markdown": grade.markdown(),
+        "steps": _steps(report.as_dict(), grade.passed),
     }
+
+
+def _steps(report: dict[str, Any], grade_passed: bool) -> list[dict[str, str]]:
+    steps = [{"kind": "read", "text": "Read Linear, GitHub, Gmail, Slack"}]
+    if report.get("refused"):
+        for reason in report.get("refusal_reasons", []):
+            steps.append({"kind": "refuse", "text": reason})
+        steps.append({"kind": "done", "text": "Zero writes. World unchanged."})
+        return steps
+    for result in report.get("results", []):
+        steps.append(
+            {
+                "kind": "class",
+                "text": f"{result['key']} classified {result['classification']}",
+            }
+        )
+        if not result.get("receipts"):
+            steps.append({"kind": "skip", "text": f"{result['key']} already consistent — no writes"})
+            continue
+        for receipt in result["receipts"]:
+            applied = "applied" if receipt.get("applied") else "HTTP 200, mutation missing"
+            steps.append(
+                {
+                    "kind": "write" if receipt.get("applied") else "fault",
+                    "text": f"{receipt['app']}.{receipt['action']} → {applied}",
+                }
+            )
+        steps.append(
+            {
+                "kind": "check" if result.get("verified") else "fault",
+                "text": f"Read-back: {result.get('reason') or result['key']}",
+            }
+        )
+    steps.append(
+        {
+            "kind": "grade" if grade_passed else "fault",
+            "text": "Independent grader PASS" if grade_passed else "Independent grader FAIL",
+        }
+    )
+    return steps
 
 
 def _public_world(world: dict[str, Any]) -> dict[str, Any]:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from promiseledger.demo_api import list_scenarios, run_scenario
+from promiseledger.demo_api import list_scenarios, preview_scenario, run_scenario
 
 
 class DemoApiTests(unittest.TestCase):
@@ -23,6 +23,18 @@ class DemoApiTests(unittest.TestCase):
         self.assertFalse(result["grade"]["passed"])
         self.assertEqual("Done", result["final"]["linear"]["tickets"][0]["status"])
         self.assertFalse(result["report"]["verified"])
+
+    def test_preview_does_not_mutate_the_world(self) -> None:
+        preview = preview_scenario("s2-desync")
+        self.assertEqual("Done", preview["initial"]["linear"]["tickets"][0]["status"])
+        self.assertEqual([], preview["initial"]["gmail"]["drafts"])
+
+    def test_run_emits_visible_steps(self) -> None:
+        result = run_scenario("s2-desync")
+        kinds = [step["kind"] for step in result["steps"]]
+        self.assertIn("read", kinds)
+        self.assertIn("write", kinds)
+        self.assertTrue(any("gmail.create_draft" in step["text"] for step in result["steps"]))
 
     def test_desync_draft_stays_unsent(self) -> None:
         result = run_scenario("s2-desync")
